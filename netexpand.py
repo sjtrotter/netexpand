@@ -38,13 +38,47 @@ def validate_args(parsed):
         #networks.append(net)
         #count += 1
 
+        # case for * in net.
+        # works, but may be more efficient way
+        if ("*" in net):
+            octets = net.split('.')
+            oct_val = 0
+            new_net = []
+            for octet in octets:
+                if (octet != '*' and oct_val > 0):
+                    invalid_net(net)
+                elif (octet == '*'):
+                    oct_val += 1
+                    new_net.append(0)
+                else:
+                    new_net.append(octet)
+
+            print(new_net)
+            cidr = 0
+            new_net_joined = ''
+            for octet in new_net:
+                if (new_net_joined != ''):
+                    new_net_joined += '.'
+                if (octet != 0):
+                    cidr += 8
+                new_net_joined += str(octet)
+            new_net_joined += "/{}".format(str(cidr))
+            print(new_net_joined)
+            net = new_net_joined
+
         try:
             networks.append(ipaddress.IPv4Network(net))
         except ipaddress.AddressValueError:
-            print("invalid network: {}".format(net))
-            exit()
+            invalid_net(net)
 
     return networks
+
+
+def invalid_net(network):
+
+    print("invalid network: {}".format(network))
+    print("try: {} -h for help".format(__file__))
+    exit()
 
 
 def print_hosts(networks, args):
