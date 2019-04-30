@@ -7,7 +7,10 @@ def parse_args(args):
 
     parser = argparse.ArgumentParser()
     parser.add_argument("network", nargs="+", \
-        help="network to expand; CIDR only (dashed, splat to come")
+        help="network to expand; CIDR, dashed, or splat format \
+              \nCIDR: x.x.x.x/x \
+              \ndashed: x.x.x.x-x \
+              \nsplat: x.x.x.*")
     parser.add_argument("-r", "--random", action="store_true", \
         help="randomize output IP's")
 
