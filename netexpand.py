@@ -53,7 +53,6 @@ def validate_args(parsed):
                 else:
                     new_net.append(octet)
 
-            print(new_net)
             cidr = 0
             new_net_joined = ''
             for octet in new_net:
@@ -63,7 +62,6 @@ def validate_args(parsed):
                     cidr += 8
                 new_net_joined += str(octet)
             new_net_joined += "/{}".format(str(cidr))
-            print(new_net_joined)
             net = new_net_joined
 
         try:
