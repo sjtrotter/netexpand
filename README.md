@@ -1,10 +1,12 @@
 # netexpand
-> Expands networks given in CIDR or dashed format.
+> Expands networks given in CIDR, dashed, or splat format.
 
 netexpand takes a given network (which can be notated with CIDR or in a dashed format), and expands the network; i.e. it prints each valid address within the network given.
 
 CIDR:   x.x.x.x/x
+
 dashed: x.x.x.x-x
+
 splat:  x.x.x.\*
 
 Default behaivor prints each valid address to stdout. Also includes an option to randomize the output addresses.
