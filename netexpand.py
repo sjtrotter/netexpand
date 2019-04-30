@@ -50,16 +50,21 @@ def validate_args(parsed):
 def print_hosts(networks, args):
 
     hosts = []
+    nets = []
 
     for net in networks:
-        hosts.append(net.hosts())
+        nets.append(net.hosts())
+
+    for net in nets:
+        for addr in net:
+            hosts.append(str(addr))
 
     if (args.random):
         random.shuffle(hosts)
 
     for host in hosts:
-        for addr in host:
-            print(str(addr))
+        
+        print(host)
 
 
 def main(args):
