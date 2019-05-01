@@ -9,6 +9,8 @@ dashed: x.x.x.x-x
 
 splat:  x.x.x.\*
 
+NOTE: Network notations should not be mixed; program reports error and exits on detection.
+
 Default behaivor prints each valid address to stdout. Also includes an option to randomize the output addresses.
 
 ![screenshot?]()
