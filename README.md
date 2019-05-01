@@ -34,7 +34,7 @@ Same as install, nothing special here. Just beed a working Python3 install, with
 
 ## Meta
 
-Stephen Trotter – [@YourTwitter](link)– stephen.j.trotter@gmail.com
+Stephen Trotter – stephen.j.trotter@gmail.com
 
 Distributed under the GNU GPLv3 license. See ``LICENSE`` for more information.
 
