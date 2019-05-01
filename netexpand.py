@@ -7,10 +7,7 @@ def parse_args(args):
 
     parser = argparse.ArgumentParser()
     parser.add_argument("network", nargs="+", \
-        help="network to expand; CIDR, dashed, or splat format \
-              \nCIDR: x.x.x.x/x \
-              \ndashed: x.x.x.x-x \
-              \nsplat: x.x.x.*")
+        help="network to expand; CIDR, dashed, or splat format")
     parser.add_argument("-r", "--random", action="store_true", \
         help="randomize output IP's")
 
@@ -41,9 +38,18 @@ def validate_args(parsed):
         #networks.append(net)
         #count += 1
 
+        try:
+            new_net, cidr = net.split('/')
+        except ValueError:
+            new_net = net
+            cidr = 0
+
         # case for * in net.
         # works, but may be more efficient way
         if ("*" in net):
+            if (type(cidr) == str):
+                invalid_net(net)
+
             octets = net.split('.')
             oct_val = 0
             new_net = []
@@ -56,7 +62,6 @@ def validate_args(parsed):
                 else:
                     new_net.append(octet)
 
-            cidr = 0
             new_net_joined = ''
             for octet in new_net:
                 if (new_net_joined != ''):
@@ -64,8 +69,9 @@ def validate_args(parsed):
                 if (octet != 0):
                     cidr += 8
                 new_net_joined += str(octet)
-            new_net_joined += "/{}".format(str(cidr))
-            net = new_net_joined
+            new_net = new_net_joined
+
+        net = new_net + '/' + str(cidr)
 
         try:
             networks.append(ipaddress.IPv4Network(net))
