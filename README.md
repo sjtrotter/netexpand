@@ -17,15 +17,26 @@ Default behaivor prints each valid address to stdout. Also includes an option to
 
 ## Installation
 
-Nothing extra required other than a current Python3 installation with standard libraries installed. Utilizes sys module and argparse module.
+Nothing extra required other than a current Python3 installation with standard libraries installed. Utilizes sys, argparse, ipaddress, and random modules.
 
 ## Usage example
 
-(will be built when completed)
+If you have chmod'd the script to +x:
+'''
+netexpand.py 192.168.1.0/30
+192.168.1.1
+192.168.1.2
+'''
+Otherwise:
+'''
+python3 netexpand.py 192.168.1.0/30 -r
+192.168.1.2
+192.168.1.1
+'''
 
 ## Development setup
 
-Same as install, nothing special here. Just beed a working Python3 install, with sys and argparse modules.
+Same as install, nothing special here. Just need a working Python3 install, with sys and argparse modules.
 
 ## Release History
 
