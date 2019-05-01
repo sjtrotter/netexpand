@@ -44,11 +44,18 @@ def validate_args(parsed):
             new_net = net
             cidr = 0
 
+        if ((type(cidr) == str) and ('-' in net or '*' in net)) \
+          or ('-' in net and '*' in net):
+            print('more than one notation used in network')
+            invalid_net(net)
+
+        # case for - in net.
+        if ('-' in net):
+            pass
+
         # case for * in net.
         # works, but may be more efficient way
         if ("*" in net):
-            if (type(cidr) == str):
-                invalid_net(net)
 
             octets = net.split('.')
             oct_val = 0
