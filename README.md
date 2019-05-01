@@ -22,17 +22,17 @@ Nothing extra required other than a current Python3 installation with standard l
 ## Usage example
 
 If you have chmod'd the script to +x:
-'''
+```
 netexpand.py 192.168.1.0/30
 192.168.1.1
 192.168.1.2
-'''
+```
 Otherwise:
-'''
+```
 python3 netexpand.py 192.168.1.0/30 -r
 192.168.1.2
 192.168.1.1
-'''
+```
 
 ## Development setup
 
