@@ -38,6 +38,9 @@ def validate_args(parsed):
         #networks.append(net)
         #count += 1
 
+        if (len(net.split('.') != 4):
+            invalid_net(net)
+
         try:
             new_net, cidr = net.split('/')
         except ValueError:
@@ -48,6 +51,13 @@ def validate_args(parsed):
           or ('-' in net and '*' in net):
             print('more than one notation used in network')
             invalid_net(net)
+
+        # NOTE: should we allow mixung of notations?
+        # like... 192.168.1-3.*  ...?
+        # or...   192.168.1-6.0/30 ...?
+        # or...   192.168.*.0/30 ...?
+        # or...   192.168.*.1-7 ...?
+        #... idk...
 
         # case for - in net.
         if ('-' in net):
@@ -93,6 +103,43 @@ def invalid_net(network):
     print("invalid network: {}".format(network))
     print("try: {} -h for help".format(__file__))
     exit()
+
+
+def dashed_net(pre_net, start, end, post_net):
+    '''
+    pre-net: prefix of the nets with ending dot (i.e. "192.168.")
+    start: start of range (int)
+    end: end of range (int)
+    post_net: end of net
+    cidr: (?) cidr of net
+    '''
+
+    nets = [ pre_net + str(x) + post_net \
+        for x in range(start, end+1) ]
+
+    dashed_net_check(nets)
+
+    return nets
+
+def dashed_net_check(net):
+
+    octets = net.split('.')
+    octet_count = 0
+    starts = []
+    ends = []
+    indices = []
+    pre_net = ''
+    dash_status = 0
+    for octet in octets:
+        if ('-' in octet):
+            start, end = octet.split('-')
+            starts.append(int(start))
+            ends.append(int(end))
+            indices.append(octet_count))
+        #TODO
+
+        else
+        
 
 
 def print_hosts(networks, args):
