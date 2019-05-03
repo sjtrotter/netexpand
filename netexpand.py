@@ -21,6 +21,27 @@ def validate_args(parsed):
     #count = 0
     #control = []
     networks = []
+
+    for net in parsed.network:
+#        print(net)
+        i = parsed.network.index(net)
+        while ('-' in net):
+            print(net)
+            net = dashed_net_checker(net)
+            if (type(net) == list):
+                parsed.network.append(net[1:])
+                net = net[0]
+#        if (type(net) == list):
+#            parsed.network.append(net[1:])
+#            print(i)
+#            print(net)
+#            print(net[0])
+#            print(parsed.network[i])
+#            parsed.network[i] = net[0]
+#        else:
+            print(type(net))
+            parsed.network[i] = net
+
     for net in parsed.network:
         #control.append(0)
         #if ("-" in net):
@@ -38,8 +59,11 @@ def validate_args(parsed):
         #networks.append(net)
         #count += 1
 
-        if (len(net.split('.') != 4):
+        if (len(net.split('.')) != 4):
             invalid_net(net)
+
+        if ('-' in net):
+            dashed_net_checker(net)
 
         try:
             new_net, cidr = net.split('/')
@@ -91,7 +115,8 @@ def validate_args(parsed):
         net = new_net + '/' + str(cidr)
 
         try:
-            networks.append(ipaddress.IPv4Network(net))
+            networks.append(ipaddress.IPv4Network(net, \
+                strict=False))
         except ipaddress.AddressValueError:
             invalid_net(net)
 
@@ -105,7 +130,7 @@ def invalid_net(network):
     exit()
 
 
-def dashed_net(pre_net, start, end, post_net):
+def dashed_net(pre_net, start, end, post_net=''):
     '''
     pre-net: prefix of the nets with ending dot (i.e. "192.168.")
     start: start of range (int)
@@ -117,9 +142,26 @@ def dashed_net(pre_net, start, end, post_net):
     nets = [ pre_net + str(x) + post_net \
         for x in range(start, end+1) ]
 
-    dashed_net_check(nets)
+    #dashed_net_check(nets)
 
     return nets
+
+def dashed_net_checker(net):
+    pre_net, post_net = net.split('-', 1)
+
+    start = pre_net.split('.')[-1]
+    pre_net = pre_net[:-(len(start))]
+
+    try:
+        end = post_net.split('.')[0]
+        post_net = post_net[len(end):]
+    except ValueError:
+        end = post_net
+
+    new_net = dashed_net(pre_net, int(start), \
+        int(end), post_net)
+    return new_net
+
 
 def dashed_net_check(net):
 
@@ -135,10 +177,10 @@ def dashed_net_check(net):
             start, end = octet.split('-')
             starts.append(int(start))
             ends.append(int(end))
-            indices.append(octet_count))
+            indices.append(octet_count)
         #TODO
 
-        else
+        #else
         
 
 
