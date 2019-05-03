@@ -23,14 +23,19 @@ def validate_args(parsed):
     networks = []
 
     for net in parsed.network:
-#        print(net)
+        print("net is:{}".format(net))
         i = parsed.network.index(net)
+        print("parsed.network[i] is: {}".format(parsed.network[i]))
+
         while ('-' in net):
-            print(net)
+#            print(net)
             net = dashed_net_checker(net)
             if (type(net) == list):
-                parsed.network.append(net[1:])
+                for n in net:
+                    if (net.index(n) != 0):
+                       parsed.network.append(n)
                 net = net[0]
+            parsed.network[i] = net
 #        if (type(net) == list):
 #            parsed.network.append(net[1:])
 #            print(i)
@@ -39,8 +44,9 @@ def validate_args(parsed):
 #            print(parsed.network[i])
 #            parsed.network[i] = net[0]
 #        else:
-            print(type(net))
-            parsed.network[i] = net
+#            print(type(net))
+#            parsed.network[i] = net
+    print("parsed.network is now: {}".format(parsed.network))
 
     for net in parsed.network:
         #control.append(0)
