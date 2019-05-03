@@ -196,7 +196,11 @@ def print_hosts(networks, args):
     nets = []
 
     for net in networks:
-        nets.append(net.hosts())
+#        print(type(net))
+        if (type(net) == ipaddress.IPv4Network):
+            nets.append(net.hosts())
+        elif (type(net) == ipaddress.IPv4Address):
+            nets.append(net)
 
     for net in nets:
         for addr in net:
