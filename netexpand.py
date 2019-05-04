@@ -49,21 +49,6 @@ def validate_args(parsed):
     print("parsed.network is now: {}".format(parsed.network))
 
     for net in parsed.network:
-        #control.append(0)
-        #if ("-" in net):
-        #    control[count] = 1
-        #    print("net has a - : {}".format(net))
-        #    pass  # need to do some logic to...
-              # get the net and to store the range
-
-        #if ("*" in net):
-        #    control[count] = 2
-        #    print("net has a * : {}".format(net))
-        #    pass  # need to do some logic to...
-              # figure out where * is, more than one, etc
-
-        #networks.append(net)
-        #count += 1
 
         if (len(net.split('.')) != 4):
             invalid_net(net)
@@ -78,20 +63,18 @@ def validate_args(parsed):
             cidr = 0
 
         if ((type(cidr) == str) and ('-' in net or '*' in net)) \
-          or ('-' in net and '*' in net):
+            or ('-' in net and '*' in net):
             print('more than one notation used in network')
             invalid_net(net)
 
-        # NOTE: should we allow mixung of notations?
-        # like... 192.168.1-3.*  ...?
-        # or...   192.168.1-6.0/30 ...?
-        # or...   192.168.*.0/30 ...?
-        # or...   192.168.*.1-7 ...?
-        #... idk...
+##        # NOTE: should we allow mixung of notations?
+#        # like... 192.168.1-3.*  ...?
+#        # or...   192.168.1-6.0/30 ...?
+#        # or...   192.168.*.0/30 ...?
+#        # or...   192.168.*.1-7 ...?
+#        #... idk...
 
         # case for - in net.
-        if ('-' in net):
-            pass
 
         # case for * in net.
         # works, but may be more efficient way
@@ -125,6 +108,9 @@ def validate_args(parsed):
                 strict=False))
         except ipaddress.AddressValueError:
             invalid_net(net)
+
+    for net in networks:
+        print("net: {} - type: {}".format(net, type(net)))
 
     return networks
 
@@ -195,16 +181,19 @@ def print_hosts(networks, args):
     hosts = []
     nets = []
 
-    for net in networks:
-#        print(type(net))
-        if (type(net) == ipaddress.IPv4Network):
-            nets.append(net.hosts())
-        elif (type(net) == ipaddress.IPv4Address):
-            nets.append(net)
+    networks.sort()
 
-    for net in nets:
-        for addr in net:
-            hosts.append(str(addr))
+    for net in networks:
+        print(type(net))
+        if (type(net) == ipaddress.IPv4Network):
+            for host in list(net.hosts()):
+                hosts.append(str(host))
+        elif (type(net) == ipaddress.IPv4Address):
+            hosts.append(str(net))
+
+#    for net in nets:
+#        for addr in net:
+#            hosts.append(str(addr))
 
     if (args.random):
         random.shuffle(hosts)
