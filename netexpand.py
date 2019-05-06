@@ -10,6 +10,8 @@ def parse_args(args):
         help="network to expand; CIDR, dashed, or splat format")
     parser.add_argument("-r", "--random", action="store_true", \
         help="randomize output IP's")
+    parser.add_argument("-d", "--debug", action="store_true", \
+        help="enable debugging mode")
 
     parsed = parser.parse_args()
     return parsed
@@ -17,6 +19,9 @@ def parse_args(args):
 
 def validate_args(parsed):
 
+
+
+""" OLD CODE :(
     # comments for splat & dashed formats
     #count = 0
     #control = []
@@ -113,6 +118,8 @@ def validate_args(parsed):
         print("net: {} - type: {}".format(net, type(net)))
 
     return networks
+"""
+
 
 
 def invalid_net(network):

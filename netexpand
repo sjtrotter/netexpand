@@ -1,0 +1,214 @@
+#!/usr/bin/env python3
+"""netexpand
+=============
+  This script takes networks given and expands them to output the valid hosts
+of the network to stdout.
+
+  Usage:
+
+    netexpand [-rd] [-h] [-V] network [network ...]
+
+  Required Parameters:
+  ====================
+  network     Network to expand. Given in one of three formats:
+              CIDR:   192.168.1.0/24
+              dashed: 192.168.1.1-254
+              splat:  192.168.1.*
+
+  Optional Parameters:
+  ====================
+  -r | --random     randomize output IPs
+  -d | --debug      shows debug messages
+  -V | --version    show version
+
+Version Control:
+================
+This program is versioned using semantic versioning: semver.org
+X.Y.Z - X: API established or changed, not backwards-compatible
+        Y: Updated, backwards-compatible, more than a bugfix
+        Z: Bugfixes, hotpatches, etc
+Current version is stored in the version variable; versioning explained there.
+
+Meta:
+Author - Stephen J. Trotter <stephen.j.trotter@gmail.com>
+License- Released under GPL v3.0, see LICENSE file for more information.
+Special Thanks:
+  Hector Herrerra - provided alternative functions for parsing network inputs
+    <https://github.com/odiepus>
+"""
+
+import sys, argparse, ipaddress, random
+"""Imports
+  =========
+  sys:        used for system calls
+  argparse:   used to parse commandline arguments
+  ipaddress:  used to create ipaddress objects, get hosts, networks, etc.
+  random:     used to shuffle output list of IPs
+"""
+
+version = "0.4.0"
+"""VERSION CONTROL
+===================
+   TODO
+===========
+[  DONE  ] - define all possible arguments
+[  DONE  ] - parse arguments
+[  DONE  ] - validate arguments
+[ INWORK ] - allow dashed format for network
+[  DONE  ] - allow splat format for network
+[ INWORK ] - allow CIDR format for network
+[ INWORK ] - allow output to be randomized
+[ INWORK ] - check for and output debugging information
+===========
+[ 50% DONE ] - v0.4.0
+
+"""
+
+
+def parse_args(args):
+
+  parser = argparse.ArgumentParser()
+
+  parser.add_argument('network', nargs='+', \
+    help="network to expand; CIDR, dashed, or splat format")
+  parser.add_argument('-r', '--random', action='store_true', \
+    help="randomize output IPs")
+  parser.add_argument('-V', '--version', action='version', \
+    version="%(prog)s version "+version)
+
+  parsed = parser.parse_args()
+
+  return parsed
+
+
+def validate_args(parsed):
+  """validate_args validates the networks passed as commandline arguments.
+
+  This checks for menial details like ... 4 octets, octets are valid (0-255),
+  ... and anything else I think of as I further write.  But, this should be
+  generally things that apply to ALL formats.
+  """
+
+  for net in parsed.network:
+
+    # trim cidr off and check it
+    try:
+      net, cidr = net.split('/')
+      if (int(cidr) < 0 or int(cidr) > 32):
+        invalid_net(net, "CIDR out of range: {}".format(cidr))
+    except ValueError:
+      pass
+
+    # check for 4 octets
+    if (len(net.split(".")) != 4):
+      invalid_net(net, "not enough octets in network")
+
+    # check that octets are in valid range
+    # have to skip if splat or dashed
+    if (not('-' in net) and not('*' in net)):
+      for octet in net.split("."):
+        if (int(octet) < 0 or int(octet) > 255):
+          invalid_net(net, "octet out of range: {}".format(octet))
+
+
+  return parsed
+
+
+def invalid_net(network, message=""):
+  """Handler function for invalid networks input.
+
+  Arguments:
+    network: the offending network
+    message: a custom message to attach to the output.
+  """
+
+  print("invalid network: {}".format(network), file=sys.stderr)
+
+  if (message != ""):
+    print(message, file=sys.stderr)
+
+  print("try: {} -h for help".format(__file__), file=sys.stderr)
+  exit()
+
+
+def splat_check(parsed):
+  """Checks networks for splat format and replaces with 0-255 dashed format.
+
+  Arguments:
+  ==========
+  parsed: variable from parse_args containing (mostly) valid nets
+
+  Returns:
+  Re-parsed argparse variable that contains dashes instead of splats.
+  """
+
+  for net in parsed.network:
+    i = parsed.network.index(net)
+    if ('*' in net):
+      cidr = 0
+      try:
+        net, cidr = net.split('/')
+      except ValueError:
+        pass
+
+      new_net = ""
+      for octet in net.split('.'):
+        if ('*' in octet):
+          octet = "0-255"
+        new_net += octet + '.'
+
+      net = new_net.strip('.')
+
+      if (cidr != 0):
+        net += '/' + cidr
+
+      print("debug: net is: {}".format(net))
+      parsed.network[i] = net
+
+  return parsed
+
+
+def dashed_check(parsed):
+  """Checks parsed networks for dashed notation. Expands dashed notations into
+     full network addresses.
+
+  Arguments:
+  ==========
+  parsed: the parsed variable from argparse containing the networks
+
+  Returns:
+  parsed: re-parsed variable from argparse with new addresses added
+  """
+
+  pass
+
+
+def main(args):
+  """main
+  =======
+  main function; performs the following:
+    keeps parsed args between all functions
+    parses commandline arguments
+    validates commandline parameters
+    parses dashed network format
+    parses splat network format
+    re-validates after splat and dashed net conversions
+    parses CIDR network format
+    prints hosts to stdout
+  """
+
+  parsed = parse_args(args)
+
+  valid = validate_args(parsed)
+
+  splatchecked = splat_check(valid)  # note: maybe replace * with dashes, 0-255?
+
+  dashchecked = dash_check(valid)  # if so... dash_check splatchecked, not valid
+
+
+
+
+if __name__ == "__main__":
+
+    main(sys.argv)
+
