@@ -6,7 +6,7 @@ of the network to stdout.
 
   Usage:
 
-    netexpand [-rd] [-h] [-V] network [network ...]
+    netexpand [-r] [-h] [-V] network [network ...]
 
   Required Parameters:
   ====================
@@ -17,8 +17,8 @@ of the network to stdout.
 
   Optional Parameters:
   ====================
+  -h | --help.      show help
   -r | --random     randomize output IPs
-  -d | --debug      shows debug messages
   -V | --version    show version
 
 Version Control:
