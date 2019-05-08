@@ -199,6 +199,13 @@ def dashed_check(parsed):
       # some erroneous logic here... need to add these addresses
       # into parsed.networks so that if there is more than one -
       # octet they will be rechecked.  TODO
+      #
+      # MAYBE - if - in net, remove net from parsed.network
+      #       - parse as so into parsed.hosts
+      #       - functionalize the for loop with the range thing
+      #       - run a while loop on the net variable instead
+      #       - type cast hosts into set to remove any overlaps, then back to list
+      #       ... profit???
    
 
 
