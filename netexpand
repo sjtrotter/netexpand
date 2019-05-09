@@ -168,7 +168,7 @@ def splat_check(parsed):
   return parsed
 
 
-def dashed_check(parsed):
+def dash_check(parsed):
   """Checks parsed networks for dashed notation. Expands dashed notations into
      full network addresses.
 
@@ -180,33 +180,85 @@ def dashed_check(parsed):
   parsed: re-parsed variable from argparse with new addresses added
   """
 
-  parsed_index = 0
   for net in parsed.network:
     if ('-' in net):
-      octet_index = 0
-      net_pre = ''
-      splitnet = net.split('.')
-      for octet in splitnet:
-        if ('-' in octet):
-          start, end = octet.split('-')
-          net_post = '.'.join(splitnet[octet_index+1]:)
-          for i in range(start, end):
-            parsed.hosts.append("{}.{}.{}".format(net_pre, \
-              str(i), net_post).strip('.'))
-          else:
-            net_pre += "{}.".format(octet)
-        octet_index += 1
-      # some erroneous logic here... need to add these addresses
-      # into parsed.networks so that if there is more than one -
-      # octet they will be rechecked.  TODO
-      #
-      # MAYBE - if - in net, remove net from parsed.network
-      #       - parse as so into parsed.hosts
-      #       - functionalize the for loop with the range thing
-      #       - run a while loop on the net variable instead
-      #       - type cast hosts into set to remove any overlaps, then back to list
-      #       ... profit???
-   
+      parsed.hosts.append(net)
+      parsed.network.remove(net)
+
+  if (len(parsed.hosts) > 0):
+    for dash_net in parsed.hosts:
+      index = parsed.hosts.index(dash_net)
+      while ('-' in dash_net):
+        pre, post = dash_net.split('-', 1)
+        try:
+          pre, start = pre.rsplit('.', 1)
+        except ValueError:
+          start = pre
+          pre = ''
+        try:
+          end, post = post.split('.', 1)
+        except ValueError:
+          end = post
+          post = ''
+
+        #index = parsed.hosts.index(dash_net)
+        #dash_net = "{}.{}.{}".format(pre, start, post).strip('.')
+
+        print("debug: pre: {} start: {} end: {} post: {}".format( \
+          pre, start, end, post))
+        print("debug: dash_net: {}".format(dash_net))
+
+        newnets = [ "{}.{}.{}".format(pre, i, post).strip('.') \
+                   for i in range(int(start), int(end)+1) ]
+
+        parsed.hosts[index] = newnets[0]
+        dash_net = newnets[0]
+        for net in newnets[1:]:
+          parsed.hosts.append(net)
+
+        #for i in range(int(start), int(end)):
+          #newnet = "{}.{}.{}".format(pre, i, post).strip('.')
+          #parsed.hosts.append(newnet)
+      print("debug: hosts are: {}".format(parsed.hosts))
+
+
+    #parsed.hosts = list(set(parsed.hosts))
+    #parsed.hosts.sort()
+
+    print("debug: hosts are: {}".format(parsed.hosts))
+
+  for host in parsed.hosts:
+    parsed.network.append(host)
+
+  print("debug: nets are: {}".format(parsed.network))
+  return parsed
+
+    
+
+
+def cidr_check(parsed):
+  """Checks parsed networks so far for CIDRs then adds them to the hosts.
+  Arguments:
+    parsed - parsed variable
+  """
+
+  for net in parsed.network:
+    if ("/" in net):
+      for host in list(ipaddress.IPv4Network(net,strict=False).hosts()):
+        parsed.hosts.append(str(host))
+
+  print("debug: hosts: {}".format(parsed.hosts))
+
+  return parsed
+
+
+def print_hosts(parsed):
+  """Prints the hosts found in the hosts sub variable of parsed.
+  Arguments:
+    parsed - the parsed variable
+  """
+  for host in parsed.hosts:
+    print(host)
 
 
 
@@ -235,7 +287,11 @@ def main(args):
 
   dashchecked = dash_check(splatchecked)
 
+  revalid = validate_args(dashchecked)
 
+  cidrchecked = cidr_check(revalid)
+
+  print_hosts(cidrchecked)
 
 
 if __name__ == "__main__":
