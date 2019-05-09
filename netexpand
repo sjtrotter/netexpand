@@ -187,7 +187,12 @@ def dash_check(parsed):
 
   if (len(parsed.hosts) > 0):
     for dash_net in parsed.hosts:
+      cidr = 0
       index = parsed.hosts.index(dash_net)
+
+      if ('/' in dash_net):
+        dash_net, cidr = dash_net.split('/')
+
       while ('-' in dash_net):
         pre, post = dash_net.split('-', 1)
         try:
@@ -210,6 +215,11 @@ def dash_check(parsed):
 
         newnets = [ "{}.{}.{}".format(pre, i, post).strip('.') \
                    for i in range(int(start), int(end)+1) ]
+
+        if (cidr != 0):
+          for i in range(0, len(newnets)):
+            print("debug: ",i, newnets[i])
+            newnets[i] += "/" + cidr
 
         parsed.hosts[index] = newnets[0]
         dash_net = newnets[0]
