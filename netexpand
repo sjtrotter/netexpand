@@ -190,8 +190,11 @@ def dash_check(parsed):
       cidr = 0
       index = parsed.hosts.index(dash_net)
 
-      if ('/' in dash_net):
+      #if ('/' in dash_net):
+      try:
         dash_net, cidr = dash_net.split('/')
+      except ValueError:
+        pass
 
       while ('-' in dash_net):
         pre, post = dash_net.split('-', 1)
@@ -209,16 +212,16 @@ def dash_check(parsed):
         #index = parsed.hosts.index(dash_net)
         #dash_net = "{}.{}.{}".format(pre, start, post).strip('.')
 
-        print("debug: pre: {} start: {} end: {} post: {}".format( \
-          pre, start, end, post))
-        print("debug: dash_net: {}".format(dash_net))
+        #print("debug: pre: {} start: {} end: {} post: {}".format( \
+          #pre, start, end, post))
+        #print("debug: dash_net: {}".format(dash_net))
 
         newnets = [ "{}.{}.{}".format(pre, i, post).strip('.') \
                    for i in range(int(start), int(end)+1) ]
 
         if (cidr != 0):
           for i in range(0, len(newnets)):
-            print("debug: ",i, newnets[i])
+            #print("debug: ",i, newnets[i])
             newnets[i] += "/" + cidr
 
         parsed.hosts[index] = newnets[0]
@@ -229,18 +232,18 @@ def dash_check(parsed):
         #for i in range(int(start), int(end)):
           #newnet = "{}.{}.{}".format(pre, i, post).strip('.')
           #parsed.hosts.append(newnet)
-      print("debug: hosts are: {}".format(parsed.hosts))
+      #print("debug: hosts are: {}".format(parsed.hosts))
 
 
     #parsed.hosts = list(set(parsed.hosts))
     #parsed.hosts.sort()
 
-    print("debug: hosts are: {}".format(parsed.hosts))
+    #print("debug: hosts are: {}".format(parsed.hosts))
 
   for host in parsed.hosts:
     parsed.network.append(host)
 
-  print("debug: nets are: {}".format(parsed.network))
+  #print("debug: nets are: {}".format(parsed.network))
   return parsed
 
     
@@ -257,7 +260,7 @@ def cidr_check(parsed):
       for host in list(ipaddress.IPv4Network(net,strict=False).hosts()):
         parsed.hosts.append(str(host))
 
-  print("debug: hosts: {}".format(parsed.hosts))
+  #print("debug: hosts: {}".format(parsed.hosts))
 
   return parsed
 
@@ -267,7 +270,18 @@ def print_hosts(parsed):
   Arguments:
     parsed - the parsed variable
   """
+  #parsed.hosts.sort(key=lambda s: map(int, s.split('.')))
+
+  parsed.hosts = list(set(parsed.hosts))
+  hosts = []
   for host in parsed.hosts:
+    hosts.append(host.split('/')[0])
+
+  for host in sorted(hosts, key=lambda host: \
+                ( int(host.split('.')[0]),\
+                  int(host.split('.')[1]),\
+                  int(host.split('.')[2]),\
+                  int(host.split('.')[3]) ) ):
     print(host)
 
 
