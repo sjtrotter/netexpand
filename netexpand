@@ -277,17 +277,19 @@ def print_hosts(parsed):
   for host in parsed.hosts:
     hosts.append(host.split('/')[0])
 
-  if (parsed.random):
-    hosts = random.shuffle(hosts)
-
+  hostlist = []
   for host in sorted(hosts, key=lambda host: \
                 ( int(host.split('.')[0]),\
                   int(host.split('.')[1]),\
                   int(host.split('.')[2]),\
                   int(host.split('.')[3]) ) ):
+    hostlist.append(host)
+
+  if (parsed.random):
+    random.shuffle(hostlist)
+
+  for host in hostlist:
     print(host)
-
-
 
 def main(args):
   """main
