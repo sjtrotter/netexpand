@@ -46,7 +46,7 @@ import sys, argparse, ipaddress, random
   random:     used to shuffle output list of IPs
 """
 
-version = "0.4.0"
+version = "0.5.0"
 """VERSION CONTROL
 ===================
    TODO
@@ -57,10 +57,10 @@ version = "0.4.0"
 [ INWORK ] - allow dashed format for network
 [  DONE  ] - allow splat format for network
 [ INWORK ] - allow CIDR format for network
-[ INWORK ] - allow output to be randomized
+[  DONE  ] - allow output to be randomized
 [ INWORK ] - check for and output debugging information
 ===========
-[ 50% DONE ] - v0.4.0
+[ 63% DONE ] - v0.5.0
 
 """
 
