@@ -130,7 +130,7 @@ def invalid_net(network, message=""):
   if (message != ""):
     print(message, file=sys.stderr)
 
-  print("try: {} -h for help".format(__file__), file=sys.stderr)
+  print("try: netexpand -h for help", file=sys.stderr)
   exit()
 
 

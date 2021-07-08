@@ -1,220 +1,330 @@
 #!/usr/bin/env python3
+"""netexpand
+=============
+  This script takes networks given and expands them to output the valid hosts
+of the network to stdout.
+
+  Usage:
+
+    netexpand [-r] [-h] [-V] network [network ...]
+
+  Required Parameters:
+  ====================
+  network     Network to expand. Given in one of three formats:
+              CIDR:   192.168.1.0/24
+              dashed: 192.168.1.1-254
+              splat:  192.168.1.*
+
+  Optional Parameters:
+  ====================
+  -h | --help.      show help
+  -r | --random     randomize output IPs
+  -V | --version    show version
+
+Version Control:
+================
+This program is versioned using semantic versioning: semver.org
+X.Y.Z - X: API established or changed, not backwards-compatible
+        Y: Updated, backwards-compatible, more than a bugfix
+        Z: Bugfixes, hotpatches, etc
+Current version is stored in the version variable; versioning explained there.
+
+Meta:
+Author - Stephen J. Trotter <stephen.j.trotter@gmail.com>
+License- Released under GPL v3.0, see LICENSE file for more information.
+Special Thanks:
+  Hector Herrerra - provided alternative functions for parsing network inputs
+    <https://github.com/odiepus>
+"""
 
 import sys, argparse, ipaddress, random
+"""Imports
+  =========
+  sys:        used for system calls
+  argparse:   used to parse commandline arguments
+  ipaddress:  used to create ipaddress objects, get hosts, networks, etc.
+  random:     used to shuffle output list of IPs
+"""
+
+version = "0.5.0"
+"""VERSION CONTROL
+===================
+   TODO
+===========
+[  DONE  ] - define all possible arguments
+[  DONE  ] - parse arguments
+[  DONE  ] - validate arguments
+[ INWORK ] - allow dashed format for network
+[  DONE  ] - allow splat format for network
+[ INWORK ] - allow CIDR format for network
+[  DONE  ] - allow output to be randomized
+[ INWORK ] - check for and output debugging information
+===========
+[ 63% DONE ] - v0.5.0
+===========
+   BUGS
+[ INWORK ] - CIDR + dashed outputs the given network/netid twice i.e. 10.0.1-2.0/30 outputs .0, .1, and .2
+
+"""
 
 
 def parse_args(args):
 
-    parser = argparse.ArgumentParser()
-    parser.add_argument("network", nargs="+", \
-        help="network to expand; CIDR, dashed, or splat format")
-    parser.add_argument("-r", "--random", action="store_true", \
-        help="randomize output IP's")
-    parser.add_argument("-d", "--debug", action="store_true", \
-        help="enable debugging mode")
+  parser = argparse.ArgumentParser()
 
-    parsed = parser.parse_args()
-    return parsed
+  parser.add_argument('network', nargs='+', \
+    help="network to expand; CIDR, dashed, or splat format")
+  parser.add_argument('-r', '--random', action='store_true', \
+    help="randomize output IPs")
+  parser.add_argument('-V', '--version', action='version', \
+    version="%(prog)s version "+version)
+
+  parsed = parser.parse_args()
+
+  return parsed
 
 
 def validate_args(parsed):
+  """validate_args validates the networks passed as commandline arguments.
 
+  This checks for menial details like ... 4 octets, octets are valid (0-255),
+  ... and anything else I think of as I further write.  But, this should be
+  generally things that apply to ALL formats.
+  """
 
+  for net in parsed.network:
 
-""" OLD CODE :(
-    # comments for splat & dashed formats
-    #count = 0
-    #control = []
-    networks = []
-
-    for net in parsed.network:
-        print("net is:{}".format(net))
-        i = parsed.network.index(net)
-        print("parsed.network[i] is: {}".format(parsed.network[i]))
-
-        while ('-' in net):
-#            print(net)
-            net = dashed_net_checker(net)
-            if (type(net) == list):
-                for n in net:
-                    if (net.index(n) != 0):
-                       parsed.network.append(n)
-                net = net[0]
-            parsed.network[i] = net
-#        if (type(net) == list):
-#            parsed.network.append(net[1:])
-#            print(i)
-#            print(net)
-#            print(net[0])
-#            print(parsed.network[i])
-#            parsed.network[i] = net[0]
-#        else:
-#            print(type(net))
-#            parsed.network[i] = net
-    print("parsed.network is now: {}".format(parsed.network))
-
-    for net in parsed.network:
-
-        if (len(net.split('.')) != 4):
-            invalid_net(net)
-
-        if ('-' in net):
-            dashed_net_checker(net)
-
-        try:
-            new_net, cidr = net.split('/')
-        except ValueError:
-            new_net = net
-            cidr = 0
-
-        if ((type(cidr) == str) and ('-' in net or '*' in net)) \
-            or ('-' in net and '*' in net):
-            print('more than one notation used in network')
-            invalid_net(net)
-
-##        # NOTE: should we allow mixung of notations?
-#        # like... 192.168.1-3.*  ...?
-#        # or...   192.168.1-6.0/30 ...?
-#        # or...   192.168.*.0/30 ...?
-#        # or...   192.168.*.1-7 ...?
-#        #... idk...
-
-        # case for - in net.
-
-        # case for * in net.
-        # works, but may be more efficient way
-        if ("*" in net):
-
-            octets = net.split('.')
-            oct_val = 0
-            new_net = []
-            for octet in octets:
-                if (octet != '*' and oct_val > 0):
-                    invalid_net(net)
-                elif (octet == '*'):
-                    oct_val += 1
-                    new_net.append(0)
-                else:
-                    new_net.append(octet)
-
-            new_net_joined = ''
-            for octet in new_net:
-                if (new_net_joined != ''):
-                    new_net_joined += '.'
-                if (octet != 0):
-                    cidr += 8
-                new_net_joined += str(octet)
-            new_net = new_net_joined
-
-        net = new_net + '/' + str(cidr)
-
-        try:
-            networks.append(ipaddress.IPv4Network(net, \
-                strict=False))
-        except ipaddress.AddressValueError:
-            invalid_net(net)
-
-    for net in networks:
-        print("net: {} - type: {}".format(net, type(net)))
-
-    return networks
-"""
-
-
-
-def invalid_net(network):
-
-    print("invalid network: {}".format(network))
-    print("try: {} -h for help".format(__file__))
-    exit()
-
-
-def dashed_net(pre_net, start, end, post_net=''):
-    '''
-    pre-net: prefix of the nets with ending dot (i.e. "192.168.")
-    start: start of range (int)
-    end: end of range (int)
-    post_net: end of net
-    cidr: (?) cidr of net
-    '''
-
-    nets = [ pre_net + str(x) + post_net \
-        for x in range(start, end+1) ]
-
-    #dashed_net_check(nets)
-
-    return nets
-
-def dashed_net_checker(net):
-    pre_net, post_net = net.split('-', 1)
-
-    start = pre_net.split('.')[-1]
-    pre_net = pre_net[:-(len(start))]
-
+    # trim cidr off and check it
     try:
-        end = post_net.split('.')[0]
-        post_net = post_net[len(end):]
+      net, cidr = net.split('/')
+      if (int(cidr) < 0 or int(cidr) > 32):
+        invalid_net(net, "CIDR out of range: {}".format(cidr))
     except ValueError:
-        end = post_net
+      pass
 
-    new_net = dashed_net(pre_net, int(start), \
-        int(end), post_net)
-    return new_net
+    # check for 4 octets
+    if (len(net.split(".")) != 4):
+      invalid_net(net, "not enough octets in network")
 
-
-def dashed_net_check(net):
-
-    octets = net.split('.')
-    octet_count = 0
-    starts = []
-    ends = []
-    indices = []
-    pre_net = ''
-    dash_status = 0
-    for octet in octets:
-        if ('-' in octet):
-            start, end = octet.split('-')
-            starts.append(int(start))
-            ends.append(int(end))
-            indices.append(octet_count)
-        #TODO
-
-        #else
-        
+    # check that octets are in valid range
+    # have to skip if splat or dashed
+    if (not('-' in net) and not('*' in net)):
+      for octet in net.split("."):
+        if (int(octet) < 0 or int(octet) > 255):
+          invalid_net(net, "octet out of range: {}".format(octet))
 
 
-def print_hosts(networks, args):
+  return parsed
 
-    hosts = []
-    nets = []
 
-    networks.sort()
+def invalid_net(network, message=""):
+  """Handler function for invalid networks input.
 
-    for net in networks:
-        print(type(net))
-        if (type(net) == ipaddress.IPv4Network):
-            for host in list(net.hosts()):
-                hosts.append(str(host))
-        elif (type(net) == ipaddress.IPv4Address):
-            hosts.append(str(net))
+  Arguments:
+    network: the offending network
+    message: a custom message to attach to the output.
+  """
 
-#    for net in nets:
-#        for addr in net:
-#            hosts.append(str(addr))
+  print("invalid network: {}".format(network), file=sys.stderr)
 
-    if (args.random):
-        random.shuffle(hosts)
+  if (message != ""):
+    print(message, file=sys.stderr)
 
-    for host in hosts:
-        
-        print(host)
+  print("try: {} -h for help".format(__file__), file=sys.stderr)
+  exit()
 
+
+def splat_check(parsed):
+  """Checks networks for splat format and replaces with 0-255 dashed format.
+
+  Arguments:
+  ==========
+  parsed: variable from parse_args containing (mostly) valid nets
+
+  Returns:
+  Re-parsed argparse variable that contains dashes instead of splats.
+  """
+
+  for net in parsed.network:
+    i = parsed.network.index(net)
+    if ('*' in net):
+      cidr = 0
+      try:
+        net, cidr = net.split('/')
+      except ValueError:
+        pass
+
+      new_net = ""
+      for octet in net.split('.'):
+        if ('*' in octet):
+          octet = "0-255"
+        new_net += octet + '.'
+
+      net = new_net.strip('.')
+
+      if (cidr != 0):
+        net += '/' + cidr
+
+      print("debug: net is: {}".format(net))
+      parsed.network[i] = net
+
+  return parsed
+
+
+def dash_check(parsed):
+  """Checks parsed networks for dashed notation. Expands dashed notations into
+     full network addresses.
+
+  Arguments:
+  ==========
+  parsed: the parsed variable from argparse containing the networks
+
+  Returns:
+  parsed: re-parsed variable from argparse with new addresses added
+  """
+
+  for net in parsed.network:
+    if ('-' in net):
+      parsed.hosts.append(net)
+      parsed.network.remove(net)
+
+  if (len(parsed.hosts) > 0):
+    for dash_net in parsed.hosts:
+      cidr = 0
+      index = parsed.hosts.index(dash_net)
+
+      #if ('/' in dash_net):
+      try:
+        dash_net, cidr = dash_net.split('/')
+      except ValueError:
+        pass
+
+      while ('-' in dash_net):
+        pre, post = dash_net.split('-', 1)
+        try:
+          pre, start = pre.rsplit('.', 1)
+        except ValueError:
+          start = pre
+          pre = ''
+        try:
+          end, post = post.split('.', 1)
+        except ValueError:
+          end = post
+          post = ''
+
+        #index = parsed.hosts.index(dash_net)
+        #dash_net = "{}.{}.{}".format(pre, start, post).strip('.')
+
+        #print("debug: pre: {} start: {} end: {} post: {}".format( \
+          #pre, start, end, post))
+        #print("debug: dash_net: {}".format(dash_net))
+
+        newnets = [ "{}.{}.{}".format(pre, i, post).strip('.') \
+                   for i in range(int(start), int(end)+1) ]
+
+        if (cidr != 0):
+          for i in range(0, len(newnets)):
+            #print("debug: ",i, newnets[i])
+            newnets[i] += "/" + cidr
+
+        parsed.hosts[index] = newnets[0]
+        dash_net = newnets[0]
+        for net in newnets[1:]:
+          parsed.hosts.append(net)
+
+        #for i in range(int(start), int(end)):
+          #newnet = "{}.{}.{}".format(pre, i, post).strip('.')
+          #parsed.hosts.append(newnet)
+      #print("debug: hosts are: {}".format(parsed.hosts))
+
+
+    #parsed.hosts = list(set(parsed.hosts))
+    #parsed.hosts.sort()
+
+    #print("debug: hosts are: {}".format(parsed.hosts))
+
+  for host in parsed.hosts:
+    parsed.network.append(host)
+
+  #print("debug: nets are: {}".format(parsed.network))
+  return parsed
+
+    
+
+
+def cidr_check(parsed):
+  """Checks parsed networks so far for CIDRs then adds them to the hosts.
+  Arguments:
+    parsed - parsed variable
+  """
+
+  for net in parsed.network:
+    if ("/" in net):
+      for host in list(ipaddress.IPv4Network(net,strict=False).hosts()):
+        parsed.hosts.append(str(host))
+
+  #print("debug: hosts: {}".format(parsed.hosts))
+
+  return parsed
+
+
+def print_hosts(parsed):
+  """Prints the hosts found in the hosts sub variable of parsed.
+  Arguments:
+    parsed - the parsed variable
+  """
+  #parsed.hosts.sort(key=lambda s: map(int, s.split('.')))
+
+  parsed.hosts = list(set(parsed.hosts))
+  hosts = []
+  for host in parsed.hosts:
+    hosts.append(host.split('/')[0])
+
+  hostlist = []
+  for host in sorted(hosts, key=lambda host: \
+                ( int(host.split('.')[0]),\
+                  int(host.split('.')[1]),\
+                  int(host.split('.')[2]),\
+                  int(host.split('.')[3]) ) ):
+    hostlist.append(host)
+
+  if (parsed.random):
+    random.shuffle(hostlist)
+
+  for host in hostlist:
+    print(host)
 
 def main(args):
+  """main
+  =======
+  main function; performs the following:
+    keeps parsed args between all functions
+    parses commandline arguments
+    validates commandline parameters
+    adds hosts variable list to parsed variable
+    parses dashed network format
+    parses splat network format
+    re-validates after splat and dashed net conversions
+    parses CIDR network format
+    prints hosts to stdout
+  """
 
-    parsed = parse_args(args)
-    validated = validate_args(parsed)
-    print_hosts(validated, parsed)
+  parsed = parse_args(args)
+
+  valid = validate_args(parsed)
+
+  valid.hosts = []
+
+  splatchecked = splat_check(valid)
+
+  dashchecked = dash_check(splatchecked)
+
+  revalid = validate_args(dashchecked)
+
+  cidrchecked = cidr_check(revalid)
+
+  print_hosts(cidrchecked)
+
 
 if __name__ == "__main__":
 
