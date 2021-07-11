@@ -37,7 +37,7 @@ Special Thanks:
     <https://github.com/odiepus>
 """
 
-import sys, argparse, ipaddress, random
+import os, sys, argparse, ipaddress, random
 """Imports
   =========
   sys:        used for system calls
@@ -130,7 +130,7 @@ def invalid_net(network, message=""):
   if (message != ""):
     print(message, file=sys.stderr)
 
-  print("try: {} -h for help".format(__file__), file=sys.stderr)
+  print("try: {} -h for help".format(os.path.basename(__file__)), file=sys.stderr)
   exit()
 
 
