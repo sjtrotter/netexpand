@@ -66,7 +66,14 @@ version = "0.5.0"
 [ INWORK ] - CIDR + dashed outputs the given network/netid twice i.e. 10.0.1-2.0/30 outputs .0, .1, and .2
 
 """
+class CidrOutOfRangeError(Exception):
+  pass
 
+class OctetOutOfRangeError(Exception):
+  pass
+
+class OctetMissingError(Exception):
+  pass
 
 def parse_args(args):
 
@@ -92,19 +99,21 @@ def validate_args(parsed):
   generally things that apply to ALL formats.
   """
 
-  for net in parsed.network:
+  for netwk in parsed.network:
 
     # trim cidr off and check it
     try:
-      net, cidr = net.split('/')
+      net, cidr = netwk.split('/')
       if (int(cidr) < 0 or int(cidr) > 32):
-        invalid_net(net, "CIDR out of range: {}".format(cidr))
+        invalid_net(netwk, "CIDR out of range: {}".format(cidr))
     except ValueError:
-      pass
+      net = netwk
+      cidr = 32
 
     # check for 4 octets
-    if (len(net.split(".")) != 4):
-      invalid_net(net, "not enough octets in network")
+    num_octs = len(net.split("."))
+    if ((num_octs < 4) or (num_octs > 4)):
+      invalid_net(netwk, "invalid number of octets")
 
     # check that octets are in valid range
     # have to skip if splat or dashed
@@ -125,10 +134,10 @@ def invalid_net(network, message=""):
     message: a custom message to attach to the output.
   """
 
-  print("invalid network: {}".format(network), file=sys.stderr)
+  print("invalid network: {}: {}".format(network, message), file=sys.stderr)
 
-  if (message != ""):
-    print(message, file=sys.stderr)
+  # if (message != ""):
+  #   print(message, file=sys.stderr)
 
   print("try: {} -h for help".format(os.path.basename(__file__)), file=sys.stderr)
   exit()
