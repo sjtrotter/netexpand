@@ -66,7 +66,10 @@ version = "0.5.0"
 [ INWORK ] - CIDR + dashed outputs the given network/netid twice i.e. 10.0.1-2.0/30 outputs .0, .1, and .2
 
 """
-
+class CidrError(Exception):
+  pass
+class OctetError(Exception):
+  pass
 
 def parse_args(args):
 
@@ -93,28 +96,59 @@ def validate_args(parsed):
   """
 
   for net in parsed.network:
-
-    # trim cidr off and check it
+    # trim cidr and store it, if  there
+    cidr=32
     try:
       net, cidr = net.split('/')
       if (int(cidr) < 0 or int(cidr) > 32):
-        invalid_net(net, "CIDR out of range: {}".format(cidr))
+        raise CidrError("CIDR out of range: {}".format(cidr))
+
+      if (len(net.split(".")) != 4):
+        raise OctetError  
+      a,b,c,d = net.split(".")
+
     except ValueError:
       pass
+    except CidrError(e):
+      invalid_net(net, e)
 
-    # check for 4 octets
+
+    #check number of octets
     if (len(net.split(".")) != 4):
       invalid_net(net, "not enough octets in network")
-
-    # check that octets are in valid range
-    # have to skip if splat or dashed
-    if (not('-' in net) and not('*' in net)):
+    
+    #check octets
       for octet in net.split("."):
-        if (int(octet) < 0 or int(octet) > 255):
-          invalid_net(net, "octet out of range: {}".format(octet))
+        if (not('-' in octet) and not('*' in octet)):
+          if (int(octet) < 0 or int(octet) > 255):
+            invalid_net(net, "octet out of range: {}".format(octet))
+    
+    return parsed
+    #
+
+  # for net in parsed.network:
+
+  #   # trim cidr off and check it
+  #   try:
+  #     net, cidr = net.split('/')
+  #     if (int(cidr) < 0 or int(cidr) > 32):
+  #       invalid_net(net, "CIDR out of range: {}".format(cidr))
+  #   except ValueError:
+  #     pass
+
+  #   # check for 4 octets
+  #   if (len(net.split(".")) != 4):
+  #     invalid_net(net, "not enough octets in network")
+
+  #   # check that octets are in valid range
+  #   # have to skip if splat or dashed
+  #   if (not('-' in net) and not('*' in net)):
+  #     for octet in net.split("."):
+  #       if (int(octet) < 0 or int(octet) > 255):
+  #         invalid_net(net, "octet out of range: {}".format(octet))
 
 
-  return parsed
+  # return parsed
 
 
 def invalid_net(network, message=""):
