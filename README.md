@@ -80,7 +80,7 @@ pip install -e .
 
 ## Meta
 
-Stephen Trotter – stephen.j.trotter@gmail.com
+Stephen Trotter – stephen@trotter.cloud
 
 Distributed under the GNU GPLv3 license. See `LICENSE` for more information.
 
