@@ -5,22 +5,36 @@ def expand_network(network_str):
     """
     Takes a network string (CIDR, dashed, or splat) and yields ipaddress.IPv4Network objects.
     """
+    # 1. SPLAT NOTATION (e.g., 192.168.1.* or 10.0.*.*)
     if '*' in network_str:
-        start = network_str.replace('*', '0')
-        end = network_str.replace('*', '255')
-        network_str = f"{start}-{end.split('.')[-1]}"
-
-    if '-' in network_str:
-        pre_dash, post_dash = network_str.split('-', 1)
-        parts = pre_dash.split('.')
-        base_prefix = '.'.join(parts[:-1]) + '.' if len(parts) > 1 else ''
+        start_str = network_str.replace('*', '0')
+        end_str = network_str.replace('*', '255')
         
-        start_ip = ipaddress.IPv4Address(pre_dash)
-        end_ip = ipaddress.IPv4Address(f"{base_prefix}{post_dash}")
+        start_ip = ipaddress.IPv4Address(start_str)
+        end_ip = ipaddress.IPv4Address(end_str)
         
         yield from ipaddress.summarize_address_range(start_ip, end_ip)
         return
 
+    # 2. DASH NOTATION (e.g., 192.168.1.10-50 or 10.0.0.0-10.0.255.255)
+    if '-' in network_str:
+        pre_dash, post_dash = network_str.split('-', 1)
+        
+        start_ip = ipaddress.IPv4Address(pre_dash)
+        
+        # Check if post_dash is a full IP or just the final octet
+        if '.' in post_dash:
+            end_ip = ipaddress.IPv4Address(post_dash)
+        else:
+            parts = pre_dash.split('.')
+            base_prefix = '.'.join(parts[:-1]) + '.' if len(parts) > 1 else ''
+            end_ip = ipaddress.IPv4Address(f"{base_prefix}{post_dash}")
+        
+        yield from ipaddress.summarize_address_range(start_ip, end_ip)
+        return
+
+    # 3. CIDR NOTATION (e.g., 192.168.1.0/24)
+    # If no CIDR is provided, strict=False assumes it's a /32 host.
     yield ipaddress.IPv4Network(network_str, strict=False)
 
 def get_components(networks, component_type, randomize=False):
