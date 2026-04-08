@@ -22,8 +22,12 @@ By default, the tool prints each valid host address to stdout. It also includes 
 
 Requires a current Python 3.7+ installation with standard libraries. 
 
-To install `netexpand` globally on your system, clone the repository and use `pip`:
+**Install from PyPI (Recommended):**
+```bash
+pip install netexpand
+```
 
+**Install from Source:**
 ```bash
 git clone [https://github.com/sjtrotter/netexpand.git](https://github.com/sjtrotter/netexpand.git)
 cd netexpand
@@ -64,7 +68,7 @@ $ netexpand 10.0.0.* -t broadcast
 To work on `netexpand` locally without needing to reinstall after every change, install the package in "editable" mode:
 
 ```bash
-git clone https://github.com/sjtrotter/netexpand.git
+git clone [https://github.com/sjtrotter/netexpand.git](https://github.com/sjtrotter/netexpand.git)
 cd netexpand
 pip install -e .
 ```
