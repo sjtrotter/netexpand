@@ -64,19 +64,10 @@ $ netexpand 10.0.0.* -t broadcast
 To work on `netexpand` locally without needing to reinstall after every change, install the package in "editable" mode:
 
 ```bash
-git clone [https://github.com/sjtrotter/netexpand.git](https://github.com/sjtrotter/netexpand.git)
+git clone https://github.com/sjtrotter/netexpand.git
 cd netexpand
 pip install -e .
 ```
-
-## Release History
-
-* 0.5.0
-    * Refactored into a standard Python package layout (`src/` structure)
-    * Migrated string parsing engine to `ipaddress.summarize_address_range`
-    * Added `-t/--type` parameter for selective component output
-* 0.0.0
-    * Initial scripts and CLI proof of concept
 
 ## Meta
 
