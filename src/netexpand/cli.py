@@ -30,19 +30,27 @@ def main(args=None):
         
     parsed = parse_args(args)
     
-    all_networks = []
-    for net_str in parsed.network:
-        try:
-            # Call the generator from core.py
-            all_networks.extend(expand_network(net_str))
-        except ValueError as e:
-            print(f"invalid network: {net_str} ({e})", file=sys.stderr)
-            sys.exit(1)
+    # Generator expression to lazily evaluate inputted networks
+    def generate_networks():
+        for net_str in parsed.network:
+            try:
+                yield from expand_network(net_str)
+            except ValueError as e:
+                print(f"invalid network: {net_str} ({e})", file=sys.stderr)
+                sys.exit(1)
 
-    outputs = get_components(all_networks, parsed.type, parsed.random)
-    
-    for out in outputs:
-        print(out)
+    try:
+        # outputs is now a generator yielding strings one by one
+        outputs = get_components(generate_networks(), parsed.type, parsed.random)
+        for out in outputs:
+            print(out)
+    except MemoryError as e:
+        # Catch our custom memory limit error for the randomize flag
+        print(f"Error: {e}", file=sys.stderr)
+        sys.exit(1)
+    except KeyboardInterrupt:
+        # Catch Ctrl+C to exit gracefully when streaming massive networks
+        sys.exit(0)
 
 if __name__ == "__main__":
     main()
