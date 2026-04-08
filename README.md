@@ -29,7 +29,7 @@ pip install netexpand
 
 **Install from Source:**
 ```bash
-git clone [https://github.com/sjtrotter/netexpand.git](https://github.com/sjtrotter/netexpand.git)
+git clone https://github.com/sjtrotter/netexpand.git
 cd netexpand
 pip install .
 ```
@@ -68,10 +68,14 @@ $ netexpand 10.0.0.* -t broadcast
 To work on `netexpand` locally without needing to reinstall after every change, install the package in "editable" mode:
 
 ```bash
-git clone [https://github.com/sjtrotter/netexpand.git](https://github.com/sjtrotter/netexpand.git)
+git clone https://github.com/sjtrotter/netexpand.git
 cd netexpand
 pip install -e .
 ```
+
+## Acknowledgements
+
+* Parts of this codebase, including refactoring and CI/CD pipeline generation, were developed with the assistance of an AI language model (Gemini 3.1 Pro).
 
 ## Meta
 
